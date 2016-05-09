@@ -14,7 +14,7 @@ Inicialmente terão à disposição os seguintes itens:
 * Cabos diversos (fêmea/macho, macho/macho)
 * Leds e resistores
 * Componentes eletrônicos diversos
-* Relatório técnico que servirá como guia de desenvolvimento
+* [Relatório técnico que servirá como guia de desenvolvimento](https://onedrive.live.com/redir?resid=2D1AF576A0781255!397208&authkey=!AObcdfhlYZMEars&ithint=file%2cdocx)
 
 **Justificativa:** Pacientes precisarão de doses corretas de luz para que o tratamento seja eficiente.
 
