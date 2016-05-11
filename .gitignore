@@ -377,3 +377,6 @@ bin/
 obj/
 *.userprefs
 
+### Visual Studio Code ###
+browser.VC.db
+
