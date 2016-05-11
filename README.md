@@ -18,7 +18,7 @@ Inicialmente terão à disposição os seguintes itens:
 
 **Justificativa:** Pacientes precisarão de doses corretas de luz para que o tratamento seja eficiente.
 
-**Objetivo:** Com esse material vocês deverão desenvolver um protocolo de comunicação entre o Arduino em um [Chrome App](https://developer.chrome.com/apps/chrome_apps_on_mobile) – o navegador Google Chrome permite que você crie um aplicativo dentro dele e acesse como se fosse um programa. Com esse App é possível abrir uma conexão serial e enviar mensagens do seu computador para o módulo bluetooth e o Arduino.
+**Objetivo:** Com esse material vocês deverão desenvolver um protocolo de comunicação entre o Arduino em um [Chrome App](https://chrome.google.com/webstore/category/apps) – o navegador Google Chrome permite que você crie um aplicativo dentro dele e acesse como se fosse um programa. Com esse App é possível abrir uma conexão serial e enviar mensagens do seu computador para o módulo bluetooth e o Arduino.
 
 **Produto gerado nesse desafio:** 2 placas de 25 LED e um Chrome App.
 
@@ -48,6 +48,7 @@ Parte do que vocês desenvolverão, será utilizada nos aplicativos oficiais da 
 
 **URLs interessantes**
 * (https://chrome.google.com/webstore/developer/dashboard)
+* (https://developer.chrome.com/apps/chrome_apps_on_mobile)
 
 Boa sorte.
 Qualquer dúvida, pode mandar um e-mail gabriel@capella.pro
