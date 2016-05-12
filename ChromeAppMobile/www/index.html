@@ -6,7 +6,31 @@
     <title>Bright Photomedia</title>
   </head>
   <body>
-    <img src="assets/chrome_logo.png" />
-    <h1>Hello, People!</h1>
+    <img src="assets/bright_logo.png" alt="Bright" />
+    
+    <p hidden>Esperando conexão bluetooth com o Arduino...</p>
+    
+    <form method="POST">
+      <div>
+        <label>Intensidade: </label>
+        <input type="range" min="0" max="100" step="1" />
+        <span>50%</span>
+      </div>
+      
+      <div>
+        <label>Frequência: </label>
+        <input type="range" min="0" max="100" step="1" />
+        <span>0 pulsos por segundo</span>
+      </div>
+      
+      <div>
+        <label>Tempo de uso: </label>
+        <input type="range" min="0" max="100" step="1" />
+        <span>0 segundos</span>
+      </div>
+      
+      <input type="button" value="iniciar" />
+      
+    </form>
   </body>
 </html>
