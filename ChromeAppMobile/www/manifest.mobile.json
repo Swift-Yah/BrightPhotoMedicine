@@ -5,7 +5,7 @@
   },
   // iOS-only overrides here (e.g. icons, name, version)
   "ios": {
-  },
+  }
   // Uncomment to use system WebView rather than Crosswalk
   // "webview": "system",
   // Uncomment to enable use of eval()

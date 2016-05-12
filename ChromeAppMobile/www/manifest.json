@@ -25,5 +25,10 @@
     },
     "permissions": [
         "<all_urls>"
-    ]
+    ],
+    "bluetooth": {
+        "uuids": [ "1105", "1106", "180D", "1809", "180F" ],
+        "socket": true,
+        "low_energy": true
+    }
 }
