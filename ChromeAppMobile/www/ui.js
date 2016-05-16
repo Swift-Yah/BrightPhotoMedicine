@@ -28,6 +28,10 @@ var UI = (function () {
         setFieldValue('status-message', message);
     };
 
+    UI.prototype.showMessageFromSerial = function(message) {
+        setFieldValue('messages-from-serial').innerHTML = message;
+    }
+
     UI.prototype.setAdapter = function (address, name) {
         var deviceInfoContainer = document.getElementById('device-info');
         var addressField = document.getElementById('adapter-address');

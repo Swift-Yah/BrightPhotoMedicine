@@ -39,6 +39,26 @@ var main = (function() {
         }
     };
 
+    BrightPhotoMedicine.prototype.writeOnSerial = function (message) {
+
+    };
+
+    BrightPhotoMedicine.prototype.getDevices = function (callback) {
+        chrome.serial.getDevices(callback);
+    };
+
+    BrightPhotoMedicine.prototype.openDevice = function(path, callback) {
+        chrome.serial.connect(path, { bitrate: 9600 }, function (connectionInfo) {
+            var device = null;
+
+            if (connectionInfo) {
+                device = new 
+            }
+        })
+    };
+
+    BrightPhotoMedicine.prototype.newActiveConnection
+
     return {
         BrightPhotoMedicine: BrightPhotoMedicine
     };
