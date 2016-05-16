@@ -1,38 +1,43 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <link href="assets/icons/icon144.png" rel="icon" type="image/png">
-    <link href="index.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="index.json" />
-    <script type="text/javascript" src="ui.json" />
+    <link href="index.css" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="ui.js"></script>
+    <script type="text/javascript" src="index.js"></script>
     <title>Bright Photomedia</title>
-  </head>
-  <body>
-    <img src="assets/bright_logo.png" alt="Bright" />
-    
-    <p id="status-message">Procurando por uma conexão bluetooth com o Arduino...</p>
-    
-    <form hidden id="setting-led" method="POST">
-      <div>
-        <label>Intensidade: </label>
-        <input id="intensity" max="100" min="0" step="1" type="range" />
+</head>
+<body>
+<img src="assets/bright_logo.png" alt="Bright"/>
+
+<p id="status-message">Procurando por uma conexão bluetooth com o Arduino...</p>
+
+<p id="device-info" hidden>
+    <b>Address: </b> <span id="device-address">BL:UE:TO:OH:00</span>
+    <b>Name: </b> <span id="device-name">Bluetooth</span>
+</p>
+
+<form hidden id="setting-led" method="POST">
+    <div>
+        <label for="intensity">Intensidade: </label>
+        <input id="intensity" max="100" min="0" step="1" type="range"/>
         <span>50%</span>
-      </div>
-      
-      <div>
-        <label>Frequência: </label>
-        <input id="frequency" max="100" min="0" step="1" type="range" />
+    </div>
+
+    <div>
+        <label for="frequency">Frequência: </label>
+        <input id="frequency" max="100" min="0" step="1" type="range"/>
         <span>0 pulsos por segundo</span>
-      </div>
-      
-      <div>
-        <label>Tempo de uso: </label>
-        <input id="time" max="100" min="0" step="1" type="range" />
+    </div>
+
+    <div>
+        <label for="time">Tempo de uso: </label>
+        <input id="time" max="100" min="0" step="1" type="range"/>
         <span>0 segundos</span>
-      </div>
-      
-      <input id="start-bluetooth" type="button" value="iniciar" />
-      
-    </form>
-  </body>
+    </div>
+
+    <input id="start-bluetooth" type="button" value="iniciar"/>
+
+</form>
+</body>
 </html>
