@@ -24,7 +24,7 @@
         }
     },
     "permissions": [
-        "<all_urls>"
+        "serial"
     ],
     "bluetooth": {
         "uuids": [ "1105", "1106", "180D", "1809", "180F" ],

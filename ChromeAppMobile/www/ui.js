@@ -17,7 +17,7 @@ var UI = (function () {
         
         this.clearAllFields();  
     };
-
+    
     UI.prototype.showStatusBluetooth = function(isOn) {
         var message = "Procurando por uma conexão bluetooth com o Arduino...";
 
@@ -28,18 +28,25 @@ var UI = (function () {
         setFieldValue('status-message', message);
     };
 
+    UI.prototype.updateStatusBluetooth = function(message) {
+        setFieldValue('status-message', message);
+    };
+
     UI.prototype.showMessageFromSerial = function(message) {
-        setFieldValue('messages-from-serial').innerHTML = message;
-    }
+        setFieldValue('messages-from-serial', message);
+    };
 
     UI.prototype.setAdapter = function (address, name) {
         var deviceInfoContainer = document.getElementById('device-info');
-        var addressField = document.getElementById('adapter-address');
-        var nameField = document.getElementById('adapter-name');
+        var addressField = document.getElementById('device-address');
+        var nameField = document.getElementById('device-name');
+        var hasInfo = address && name;
 
-        deviceInfoContainer.hidden = true;
+        deviceInfoContainer.hidden = !hasInfo;
 
-        if (address && name) {
+        this.showStatusBluetooth(hasInfo);
+
+        if (hasInfo) {
             deviceInfoContainer.hidden = false;
 
             var setAdapterField = function (field, value) {
@@ -49,8 +56,9 @@ var UI = (function () {
                 field.appendChild(textNode);
             };
 
-            setAdapterField(addressField, address ? address : 'unknown');
-            setAdapterField(nameField, name ? name : 'Local Adapter');
+
+            setAdapterField(addressField, address ? address : 'desconhecido');
+            setAdapterField(nameField, name ? name : 'Adaptador Local');
         }
     };
 

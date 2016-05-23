@@ -8,21 +8,27 @@ var main = (function() {
         this.chrcMap_ = {};
         this.discovering_ = false;
         this.powered = false;
+        this.ui = UI.getInstance();
+        this.serial = SerialService.getInstance();
     }
 
     BrightPhotoMedicine.prototype.init = function () {
         // Store the |this| to be used by API callbacks below.
         var self = this;
 
+        self.serial.init();
+
         // Request information about the local Bluetooth adapter to be displayed in the UI.
         var updateAdapterInfo = function(adapterInfo) {
-            UI.getInstance().setAdapter(adapterInfo.address, adapterInfo.name);
-            self.updateDiscoveryState(adapterInfo.discovering);
+            self.ui.setAdapter(adapterInfo.address, adapterInfo.name);
+            self.updateDiscoveryToggleState(adapterInfo.discovering);
         };
 
         chrome.bluetooth.getAdapterState(function (adapterState) {
             if (chrome.runtime.lastError) {
-                console.log(chrome.runtime.lastError.message);
+                var message = chrome.run().lastError.message;
+
+                self.ui.updateStatusBluetooth(message);
             }
 
             self.updateDiscoveryToggleState(adapterState.discovering);
@@ -35,35 +41,14 @@ var main = (function() {
     BrightPhotoMedicine.prototype.updateDiscoveryToggleState = function (discovering) {
         if (this.discovering_ != discovering) {
             this.discovering_ = discovering;
-            UI.getInstance().showStatusBluetooth(discovering);
         }
+
+        this.ui.showStatusBluetooth(discovering);
     };
-
-    BrightPhotoMedicine.prototype.writeOnSerial = function (message) {
-
-    };
-
-    BrightPhotoMedicine.prototype.getDevices = function (callback) {
-        chrome.serial.getDevices(callback);
-    };
-
-    BrightPhotoMedicine.prototype.openDevice = function(path, callback) {
-        chrome.serial.connect(path, { bitrate: 9600 }, function (connectionInfo) {
-            var device = null;
-
-            if (connectionInfo) {
-                device = new 
-            }
-        })
-    };
-
-    BrightPhotoMedicine.prototype.newActiveConnection
-
+    
     return {
         BrightPhotoMedicine: BrightPhotoMedicine
     };
-
-
 })();
 
 document.addEventListener('DOMContentLoaded', function () {

@@ -38,4 +38,4 @@
     <preference name="xwalkCommandLine" value="--disable-pull-to-refresh-effect"/>
     <preference name="xwalkMode" value="embedded"/>
     <preference name="xwalkMultipleApk" value="true"/>
-<access origin="*"/></widget>
+</widget>

@@ -1,4 +1,4 @@
-var serial = (function () {
+var SerialService = (function () {
     var logObj = function (object) {
         console.log(object);
     };
@@ -8,35 +8,87 @@ var serial = (function () {
     };
 
     function Serial() {
-
+        this.onReceive = new chrome.Event();
+        this.onError = new chrome.Event();
+        this.onClose = new chrome.Event();
+        this.device = null;
+        this.ui = UI.getInstance();
     }
 
-    Serial.prototype.init = function (connectionId) {
-        
+    // Global instance
+    var instance;
+
+    // Public methods:
+
+    Serial.prototype.init = function () {
+        var self = this;
+
+        self.listDevices();
     };
 
-    // Encapsulates an active serial device connection.
-    var DeviceConnection = function (connectionId) {
-        var onReceive = new chrome.Event();
-        var onError = new chrome.Event();
-        var onClose = new chrome.Event();
+    Serial.prototype.initConnection = function (connectionId) {
+        chrome.serial.onReceive.addListener(function (receiveInfo) {
+            if (receiveInfo.connectionId == connectionId) {
+                var string = arrayBufferToString(receiveInfo.data);
 
-        var send = function (message) {
-            var newString = stringToArrayBuffer(message);
+                self.onReceive.dispatch(string);
+            }
+        });
 
-            chrome.serial.send(connectionId, newString, function () {});
-        }
-
-        var close = function () {
-            chrome.serial.disconnect(connectionId, function (success) {
-                if (success) {
-                    onClose.dispatch();
-                }
-            })
-        }
+        chrome.serial.onReceiveError.addListener(function (errorInfo) {
+            if (errorInfo.connectionId == connectionId) {
+                self.onError.dispatch(errorInfo.error);
+            }
+        });
     };
 
-    // Private methods
+    Serial.prototype.close = function () {
+        chrome.serial.disconnect(connectionId, function (success) {
+            if (success) {
+                self.onClose.dispatch();
+            }
+        })
+    };
+
+    Serial.prototype.send = function (message) {
+        var newString = stringToArrayBuffer(message);
+
+        chrome.serial.send(connectionId, newString, function () {});
+    };
+
+    Serial.prototype.getDevices = function (callback) {
+        chrome.serial.getDevices(callback);
+    };
+
+    Serial.prototype.openDevice = function (callback) {
+        chrome.serial.connect(path, { bitrate: 9600}, function (connectionInfo) {
+            var self = this;
+
+            if (connectionInfo) {
+                self.device = self.initConnection(connectionInfo.connectionId);
+            }
+
+            callback(self.device);
+        });
+    };
+
+    Serial.prototype.listDevices = function() {
+        var onLogDevices = function(ports) {
+            var count = ports.length ? ports.length : 0;
+
+            var message = "Nós encontramos " + count + " conexões seriais: ";
+
+            for (var i = 0; i < count; i++) {
+                message += ports[i].path + "\r\n";
+            }
+
+            UI.getInstance().showMessageFromSerial(message);
+        };
+
+        this.getDevices(onLogDevices);
+    };
+
+    // Private methods:
 
     // Interprets an ArrayBuffer as UTF-8 encoded string data.
     var arrayBufferToString = function (buffer) {
@@ -56,10 +108,16 @@ var serial = (function () {
             bytes[i] = encodedString.charCodeAt(i);
         }
 
-        return bytes.buffer
-    }
+        return bytes.buffer;
+    };
 
     return {
-        "newSerialConnection": Serial
+        getInstance: function () {
+            if (!instance) {
+                instance = new Serial();
+            }
+
+            return instance;
+        }
     };
 })();
