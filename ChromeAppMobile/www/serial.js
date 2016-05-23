@@ -24,18 +24,27 @@ var SerialService = (function () {
         var self = this;
 
         self.listDevices();
+        self.openDevice();
     };
 
     Serial.prototype.initConnection = function (connectionId) {
+        var self = this;g
+
         chrome.serial.onReceive.addListener(function (receiveInfo) {
+            logObj(receiveInfo);
+
             if (receiveInfo.connectionId == connectionId) {
                 var string = arrayBufferToString(receiveInfo.data);
+
+                UI.getInstance().showMessageFromSerial(string);
 
                 self.onReceive.dispatch(string);
             }
         });
 
         chrome.serial.onReceiveError.addListener(function (errorInfo) {
+            logObj(errorInfo);
+
             if (errorInfo.connectionId == connectionId) {
                 self.onError.dispatch(errorInfo.error);
             }
@@ -60,15 +69,17 @@ var SerialService = (function () {
         chrome.serial.getDevices(callback);
     };
 
-    Serial.prototype.openDevice = function (callback) {
-        chrome.serial.connect(path, { bitrate: 9600}, function (connectionInfo) {
-            var self = this;
+    Serial.prototype.openDevice = function () {
+        var self = this;
+
+        chrome.serial.connect("/dev/tty.usbmodem1421", { bitrate: 9600}, function (connectionInfo) {
+            log(connectionInfo);
 
             if (connectionInfo) {
                 self.device = self.initConnection(connectionInfo.connectionId);
             }
 
-            callback(self.device);
+            // callback(self.device);
         });
     };
 
@@ -85,6 +96,7 @@ var SerialService = (function () {
             UI.getInstance().showMessageFromSerial(message);
         };
 
+        this.openDevice();
         this.getDevices(onLogDevices);
     };
 
