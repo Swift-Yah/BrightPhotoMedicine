@@ -9,7 +9,7 @@
  
 #include <SoftwareSerial.h>
 
-SoftwareSerial mySerial(10, 11); // RX, TX
+SoftwareSerial myBluetoothSerial(0, 1); // RX, TX
 
 private void setUpBluetooth() {
   
@@ -22,10 +22,6 @@ void setup() {
   Serial.begin(9600);
 
   Serial.println("Bluetooth initialized!");
-
-  // Set the data rate for the SoftwareSerial port
-  mySerial.begin(4800);
-  mySerial.println("Hello, world?");
 }
 
 void loop() { // run over and over
