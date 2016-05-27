@@ -99,7 +99,7 @@ const byte maximumSizeOfBuffer = 255;
 const byte amountOfValuesOnProtocol = 4;
 
 // The increase step for each PMW sent to pulse.
-const byte pulseStep = 5;
+const float pulseStep = 5;
 
 // The protocol that we were waiting.
 // A unique string that should be the following format.
@@ -323,10 +323,11 @@ void processProtocolData() {
   brightPin.checkIfReadyToGo();
 
   if (brightPin.readyToGo) {
-    int totalDelay = 0;
+    long totalDelay = 0;
     
     for (byte b = 0; b < brightPin.frequency; b++) {
-      float eachIncreaseDelay = (brightPin.milisecondsToOff / brightPin.milisecondsBetweenPulses) / 2.0;
+      float eachIncreaseDelay = brightPin.brightness / pulseStep;
+      
       Serial.print("B = ");
       Serial.println(eachIncreaseDelay);
 
@@ -347,7 +348,7 @@ void processProtocolData() {
       }
     }
 
-    Serial.print(totalDelay);
+    Serial.println(totalDelay);
   }
 }
 
