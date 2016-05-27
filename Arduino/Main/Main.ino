@@ -82,6 +82,11 @@ const String wrongRangeOfTimeToOff = "Sorry, the TIME TO TURN OFF value is out o
 // Show message to introduce received value.
 const String showDataReceived = "The value received was: \n";
 
+// The protocol that we were waiting.
+// A unique string that should be the following format.
+// bright://swift-yah.io/?pin={ledPin}&intensity={intensityOfBright}&frequency={numberOfPulses}&time={totalTimeTilTurnOffAgain}
+const String pattern = "^bright:\\/\\/swift-yah.io\\/\?pin=(.*)&intensity=(.*)&frequency=(.*)&time=(.*)$";
+
 // The object for bluetooth serial operations.
 SoftwareSerial myBluetooth(rxPin, txPin);
 
@@ -141,7 +146,7 @@ int convertBrightnessInputedValue(int value) {
     return minimumIntensity;
   }
 
-  return (maximumBrightness / maxValue) * value;
+  return (maximumBrightness / maximumIntensity) * value;
 }
 
 int convertSecondsForMiliseconds(int seconds) {
@@ -154,18 +159,34 @@ int convertSecondsForMiliseconds(int seconds) {
 
 // Structure to be translated the data from protocol.
 struct BrightProtocol {
+
+  // The led that we must manipulate: 3 - 13.
   int ledPin;
+
+  // The brightness of the led: 0 - 100.
   int intensity;
+
+  // The number of time that the led will pulse before turn off.
   int frequency;
+
+  // Time to stays on.
   int timeToOff;
+
+  // A flag that informs us that this object is prepared to work in the led.
   bool readyToGo;
 
   // Processed input values.
 
+  // The real brightness to set in the led with analogWrite: 0 - 255.
   int brightness;
+
+  // The time between each pulse.
   int milisecondsBetweenPulses;
+
+  // Total time to turn off.
   int milisecondsToOff;
 
+  // Do a series of checks to be sure that we can use it.
   void checkIfReadyToGo() {
     readyToGo = true;
 
@@ -176,22 +197,23 @@ struct BrightProtocol {
 
     if (intensity < minimumIntensity || intensity > maximumIntensity) {
       readyToGo = false;
-      printOnSerial(wrongRangeOfPin, true);
+      printOnSerial(wrongRangeOfIntensity, true);
     }
 
     if (frequency < minimumFrequency || frequency > maximumFrequency) {
       readyToGo = false;
-      printOnSerial(wrongRangeOfPin, true);
+      printOnSerial(wrongRangeOfFrequency, true);
     }
 
     if (timeToOff < minimumTimeToOff || timeToOff > maximumTimeToOff) {
       readyToGo = false;
-      printOnSerial(wrongRangeOfPin, true);
+      printOnSerial(wrongRangeOfTimeToOff, true);
     }
 
     if (readyToGo) {
-      milisecondsToOff =
-        milisecondsBetweenPulses = timeToOff / frequency;
+      brightness = convertBrightnessInputedValue(intensity);
+      milisecondsToOff = convertSecondsForMiliseconds(timeToOff);
+      milisecondsBetweenPulses = milisecondsToOff / frequency;
     }
   }
 };
@@ -199,12 +221,6 @@ struct BrightProtocol {
 struct BrightProtocol brightPin;
 
 bool checkRegexForProtocol(String data) {
-  // The protocol that we were waiting.
-  // A unique string that should be the following format.
-  // bright://swift-yah.io/?pin={ledPin}&intensity={intensityOfBright}&frequency={numberOfPulses}&time={totalTimeTilTurnOffAgain}
-
-  String pattern = "^bright:\\/\\/swift-yah.io\\/\?pin=(.*)&intensity=(.*)&frequency=(.*)&time=(.*)$";
-
   // Match state object.
   MatchState matchState;
 
@@ -212,7 +228,7 @@ bool checkRegexForProtocol(String data) {
 }
 
 void processProtocolData() {
-
+  brightPin.checkIfReadyToGo();
 
   if (brightPin.readyToGo) {
 
