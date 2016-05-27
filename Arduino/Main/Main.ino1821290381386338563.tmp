@@ -9,7 +9,6 @@
 
 #include <Regexp.h>
 #include <SoftwareSerial.h>
-#include <Thread.h>
 
 // The read pin for bluetooth serial port.
 const byte rxPin = 0;
@@ -86,26 +85,13 @@ const String wrongRangeOfTimeToOff = "Sorry, the TIME TO TURN OFF value is out o
 // Show message to introduce received value.
 const String showDataReceived = "The value received was: \n";
 
-// Show message to warns the user about some data missed.
-const String weCouldNotFindAllData = "Sorry, we need all data, but some are failing.";
-
 // The maximum size for be used on a buffer object.
 const byte maximumSizeOfBuffer = 255;
-
-// The number of values passed on protocol.
-const byte amountOfValuesOnProtocol = 4;
 
 // The protocol that we were waiting.
 // A unique string that should be the following format.
 // bright://swift-yah.io/?pin={ledPin}&intensity={intensityOfBright}&frequency={numberOfPulses}&time={totalTimeTilTurnOffAgain}
 const char pattern[] = "^bright:\\/\\/swift-yah.io\\/\?pin=(%d+)&intensity=(%d+)&frequency=(%d+)&time=(%d+)$";
-
-// Each index indicates the position on regex groups of a value.
-
-const byte pinLedIndex = 0;
-const byte intensityIndex = 1;
-const byte frequencyIndex = 2;
-const byte timeIndex = 3;
 
 // The object for bluetooth serial operations.
 SoftwareSerial myBluetooth(rxPin, txPin);
@@ -139,10 +125,10 @@ void changeBrightness(byte pin, byte brigthness) {
 
 // Use the Serial service to print a message.
 void printOnSerial(String message, bool isWriteForUser) {
-  Serial.println(message);
+  Serial.print(message);
 
   if (isWriteForUser) {
-    myBluetooth.println(message);
+    myBluetooth.print(message);
   }
 }
 
@@ -183,6 +169,7 @@ long convertSecondsForMiliseconds(short seconds) {
 
 // Structure to be translated the data from protocol.
 struct BrightProtocol {
+
   // The led that we must manipulate: 3 - 13.
   byte ledPin;
 
@@ -249,13 +236,7 @@ bool checkRegexForProtocol(String data) {
   // Will store the matched result.
   char *matchedResult;
 
-  // Will store each data recovered.
-  char *pinLedData;
-  char *intensityData;
-  char *frequencyData;
-  char *timeData;
-
-  // Convert our String to char[].
+  // Convert our String to char[]
   data.toCharArray(dataArray, maximumSizeOfBuffer);
   
   // Match state object.
@@ -269,39 +250,27 @@ bool checkRegexForProtocol(String data) {
 
   // Let's search.
   char matchResult = matchState.Match(pattern, 0);
+  
 
   switch (matchResult) {
     case REGEXP_MATCHED:
       // Stores the matched on.
       matchedResult = matchState.GetMatch(resultBuffer);
-
-      if (matchState.level < amountOfValuesOnProtocol) {
-        printOnSerial(weCouldNotFindAllData, true);
-        
-        return false;
-      }
       
-      pinLedData = matchState.GetCapture(resultBuffer, pinLedIndex);
-      intensityData = matchState.GetCapture(resultBuffer, intensityIndex);
-      frequencyData = matchState.GetCapture(resultBuffer, frequencyIndex);
-      timeData = matchState.GetCapture(resultBuffer, timeIndex);
 
-      brightPin.ledPin = (int) pinLedData;
-      brightPin.intensity = (int) intensityData;
-      brightPin.frequency = (short) frequencyData;
-      brightPin.timeToOff = (short) timeData;
-
-      return true;
+      break;
 
     case REGEXP_NOMATCH:
       printOnSerial(dontMatchesWithProtocol, true);
 
-      return false;
+      break;
 
     default:
       printOnSerial(problemsOnRegexP, false);
+  }
 
-      return false;
+  for (byte i = 0; i < matchState.level; i++) {
+
   }
 }
 
@@ -310,11 +279,7 @@ void processProtocolData() {
   brightPin.checkIfReadyToGo();
 
   if (brightPin.readyToGo) {
-    for (byte b = 0; b <= brightPin.frequency; b++) {
-      analogWrite(brightPin.ledPin, brightPin.brightness);
-      delay(brightPin.milisecondsBetweenPulses);
-      analogWrite(brightPin.ledPin, minimumIntensity);
-    }
+
   }
 }
 
