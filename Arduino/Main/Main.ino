@@ -27,7 +27,7 @@ const short baudRateBluetooth = 9600;
 const long baudRateSerialOutput = 9600;
 
 // The maximum brightness for a led.
-const byte maximumBrightness = 255;
+const float maximumBrightness = 255;
 
 // The minimum brightness for a led.
 const byte minimumBrightness = 0;
@@ -42,7 +42,7 @@ const byte lastPin = 13;
 const byte minimumIntensity = 0;
 
 // The maximum value to intensity of a led.
-const byte maximumIntensity = 100;
+const float maximumIntensity = 100;
 
 // The minimum value to pulses of a led.
 const byte minimumFrequency = 1;
@@ -97,6 +97,9 @@ const byte maximumSizeOfBuffer = 255;
 
 // The number of values passed on protocol.
 const byte amountOfValuesOnProtocol = 4;
+
+// The increase step for each PMW sent to pulse.
+const byte pulseStep = 5;
 
 // The protocol that we were waiting.
 // A unique string that should be the following format.
@@ -177,7 +180,7 @@ void setUpSerialStatus() {
 }
 
 // Convert from 0 - 100 to 0 - 255.
-short convertToBrightness(byte value) {
+short convertToBrightness(float value) {
   if (value < minimumIntensity || value > maximumIntensity) {
     return minimumIntensity;
   }
@@ -212,10 +215,10 @@ struct BrightProtocol {
   bool readyToGo;
 
   // The real brightness to set in the led with analogWrite: 0 - 255.
-  byte brightness;
+  float brightness;
 
   // The time between each pulse.
-  long milisecondsBetweenPulses;
+  float milisecondsBetweenPulses;
 
   // Total time to turn off.
   long milisecondsToOff;
@@ -320,21 +323,36 @@ void processProtocolData() {
   brightPin.checkIfReadyToGo();
 
   if (brightPin.readyToGo) {
-    for (byte b = 0; b <= brightPin.frequency; b++) {
-      Serial.print(brightPin.milisecondsBetweenPulses);
+    int totalDelay = 0;
+    
+    for (byte b = 0; b < brightPin.frequency; b++) {
+      float eachIncreaseDelay = (brightPin.milisecondsToOff / brightPin.milisecondsBetweenPulses) / 2.0;
+      Serial.print("B = ");
+      Serial.println(eachIncreaseDelay);
 
-      analogWrite(brightPin.ledPin, brightPin.brightness);
-      delay(brightPin.milisecondsBetweenPulses);
-      analogWrite(brightPin.ledPin, minimumIntensity);
-      delay(brightPin.milisecondsBetweenPulses);
+      for (byte i = minimumBrightness; i < brightPin.brightness; i += pulseStep) {
+        Serial.print("I = ");
+        Serial.println(i);
+        analogWrite(brightPin.ledPin, i);
+        delay(eachIncreaseDelay);
+        totalDelay += eachIncreaseDelay;
+      }
+
+      for (byte j = maximumBrightness; j > 0; j -= pulseStep) {
+        Serial.print("J = ");
+        Serial.println(j);
+        analogWrite(brightPin.ledPin, j);
+        delay(eachIncreaseDelay);
+        totalDelay += eachIncreaseDelay;
+      }
     }
+
+    Serial.print(totalDelay);
   }
 }
 
 // Start to work on data received from bluetooth serial.
 void workOnDataReceived(String data) {
-  turnOnLed(statusPin);
-
   printOnSerial(showDataReceived, false);
   printOnSerial(data, false);
 
