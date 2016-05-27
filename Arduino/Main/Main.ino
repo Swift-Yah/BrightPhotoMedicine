@@ -11,52 +11,52 @@
 #include <SoftwareSerial.h>
 
 // The read pin for bluetooth serial port.
-const int rxPin = 0;
+const byte rxPin = 0;
 
 // The write pin for bluetooth serial port.
-const int txPin = 1;
+const byte txPin = 1;
 
 // The pin that indicates the use of the bluetooth.
-const int statusPin = 2;
+const byte statusPin = 2;
 
 // The baud-rate that bluetooth users will use.
-const int baudRateBluetooth = 9600;
+const short baudRateBluetooth = 9600;
 
 // The baud-rate that we use for output user inputs.
 const long baudRateSerialOutput = 115200;
 
 // The maximum brightness for a led.
-const int maximumBrightness = 255;
+const byte maximumBrightness = 255;
 
 // The minimum brightness for a led.
-const int minimumBrightness = 0;
+const byte minimumBrightness = 0;
 
 // First available pin to user use.
-const int firstPin = 3;
+const byte firstPin = 3;
 
 // Last available pin to user use.
-const int lastPin = 13;
+const byte lastPin = 13;
 
 // The minimum value to intensity of a led.
-const int minimumIntensity = 0;
+const byte minimumIntensity = 0;
 
 // The maximum value to intensity of a led.
-const int maximumIntensity = 100;
+const byte maximumIntensity = 100;
 
 // The minimum value to pulses of a led.
-const int minimumFrequency = 1;
+const byte minimumFrequency = 1;
 
 // The maximum value to pulses of a led.
-const int maximumFrequency = 9999;
+const short maximumFrequency = 9999;
 
 // The minimum time to turn off the led (in seconds).
-const int minimumTimeToOff = 1;
+const byte minimumTimeToOff = 1;
 
 // The maximum time to turn off the led (in seconds).
-const int maximumTimeToOff = 3600;
+const short maximumTimeToOff = 3600;
 
 // Miliseconds in one second.
-const int milisecondsInSecond = 1000;
+const short milisecondsInSecond = 1000;
 
 // Message sent to user when it connected with us.
 const String messageWhenConnected = "Welcome to Swift Yah's Arduino...";
@@ -103,17 +103,17 @@ void setUpBluetooth() {
 }
 
 // Alias for digital write HIGH.
-void turnOnLed(int pin) {
+void turnOnLed(byte pin) {
   digitalWrite(pin, HIGH);
 }
 
 // Alias for digital write LOW.
-void turnOffLed(int pin) {
+void turnOffLed(byte pin) {
   digitalWrite(pin, LOW);
 }
 
 // Change the brightness for a current pin.
-void changeBrightness(int pin, int brigthness) {
+void changeBrightness(byte pin, byte brigthness) {
   analogWrite(pin, brigthness);
 }
 
@@ -127,12 +127,12 @@ void printOnSerial(String message, bool isWriteForUser) {
 
 // Set up all non-used for bluetooth and status pin for potencial used for the end-users.
 void setUpAllPinsAsOutputs() {
-  for (int i = firstPin; i <= lastPin; i++) {
+  for (byte i = firstPin; i <= lastPin; i++) {
     // Set the current pin as OUTPUT pin.
     pinMode(i, OUTPUT);
 
     // Turn off current pin.
-    digitalWrite(i, LOW);
+    turnOffLed(i);
   }
 }
 
@@ -141,7 +141,7 @@ void setUpSerialStatus() {
   printOnSerial(startingOutputMessage, false);
 }
 
-int convertBrightnessInputedValue(int value) {
+short convertToBrightness(byte value) {
   if (value < minimumIntensity || value > maximumIntensity) {
     return minimumIntensity;
   }
@@ -149,7 +149,7 @@ int convertBrightnessInputedValue(int value) {
   return (maximumBrightness / maximumIntensity) * value;
 }
 
-int convertSecondsForMiliseconds(int seconds) {
+long convertSecondsForMiliseconds(short seconds) {
   if (seconds < minimumTimeToOff) {
     return minimumTimeToOff;
   }
@@ -161,30 +161,28 @@ int convertSecondsForMiliseconds(int seconds) {
 struct BrightProtocol {
 
   // The led that we must manipulate: 3 - 13.
-  int ledPin;
+  byte ledPin;
 
   // The brightness of the led: 0 - 100.
-  int intensity;
+  byte intensity;
 
   // The number of time that the led will pulse before turn off.
-  int frequency;
+  short frequency;
 
   // Time to stays on.
-  int timeToOff;
+  short timeToOff;
 
   // A flag that informs us that this object is prepared to work in the led.
   bool readyToGo;
 
-  // Processed input values.
-
   // The real brightness to set in the led with analogWrite: 0 - 255.
-  int brightness;
+  byte brightness;
 
   // The time between each pulse.
-  int milisecondsBetweenPulses;
+  long milisecondsBetweenPulses;
 
   // Total time to turn off.
-  int milisecondsToOff;
+  long milisecondsToOff;
 
   // Do a series of checks to be sure that we can use it.
   void checkIfReadyToGo() {
@@ -211,7 +209,7 @@ struct BrightProtocol {
     }
 
     if (readyToGo) {
-      brightness = convertBrightnessInputedValue(intensity);
+      brightness = convertToBrightness(intensity);
       milisecondsToOff = convertSecondsForMiliseconds(timeToOff);
       milisecondsBetweenPulses = milisecondsToOff / frequency;
     }
@@ -220,11 +218,19 @@ struct BrightProtocol {
 
 struct BrightProtocol brightPin;
 
+void matchCallback(const char* match, const unsigned byte lenght, const MatchState &matchState) {
+  char capture[255];
+
+  for (byte i = 0; i < matchState.level; i++) {
+    
+  }
+}
+
 bool checkRegexForProtocol(String data) {
   // Match state object.
   MatchState matchState;
 
-
+  
 }
 
 void processProtocolData() {
@@ -246,7 +252,6 @@ void workOnDataReceived(String data) {
   if (working) {
     processProtocolData();
   } else {
-    brightPin.readyToGo = false;
     printOnSerial(dontMatchesWithProtocol, true);
   }
 }
