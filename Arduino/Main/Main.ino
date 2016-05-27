@@ -24,7 +24,7 @@ const byte statusPin = 2;
 const short baudRateBluetooth = 9600;
 
 // The baud-rate that we use for output user inputs.
-const long baudRateSerialOutput = 115200;
+const long baudRateSerialOutput = 9600;
 
 // The maximum brightness for a led.
 const byte maximumBrightness = 255;
@@ -68,6 +68,9 @@ const String startingOutputMessage = "Waiting for user' inputs.";
 // The protocol send to us not is correct.
 const String dontMatchesWithProtocol = "Sorry, the data send to us is wrong.";
 
+// When we could not process correctly the data sent to us.
+const String dontWorkingWithDataOnProtocol = "We could not get all data we need.";
+
 // We make a wrong regex.
 const String problemsOnRegexP = "Sorry, we make a mistake on the pattern.";
 
@@ -84,7 +87,7 @@ const String wrongRangeOfFrequency = "Sorry, the FREQUENCY value is out of the r
 const String wrongRangeOfTimeToOff = "Sorry, the TIME TO TURN OFF value is out of the range";
 
 // Show message to introduce received value.
-const String showDataReceived = "The value received was: \n";
+const String showDataReceived = "The value received was: ";
 
 // Show message to warns the user about some data missed.
 const String weCouldNotFindAllData = "Sorry, we need all data, but some are failing.";
@@ -97,8 +100,9 @@ const byte amountOfValuesOnProtocol = 4;
 
 // The protocol that we were waiting.
 // A unique string that should be the following format.
-// bright://swift-yah.io/?pin={ledPin}&intensity={intensityOfBright}&frequency={numberOfPulses}&time={totalTimeTilTurnOffAgain}
-const char pattern[] = "^bright:\\/\\/swift-yah.io\\/\?pin=(%d+)&intensity=(%d+)&frequency=(%d+)&time=(%d+)$";
+// Model: {(pinLed), (intensity), (frequency), (time)}
+// Example: {4, 30, 2, 10}
+const char pattern[] = "{(.*), (.*), (.*), (.*)}";
 
 // Each index indicates the position on regex groups of a value.
 
@@ -112,14 +116,17 @@ SoftwareSerial myBluetooth(rxPin, txPin);
 
 // Set up the bluetooth.
 void setUpBluetooth() {
-  // Set up the baud-rate for 9600.
+  // Set up the baud-rate.
   myBluetooth.begin(baudRateBluetooth);
 
-  // A message to be read for the Bluetooth users.
-  myBluetooth.print(messageWhenConnected);
+  // Set up RX as INPUT.
+  pinMode(rxPin, INPUT);
 
-  // Set up the this led to show the status of the bluetooth.
-  pinMode(statusPin, OUTPUT);
+  // Set up TX as OUTPUT.
+  pinMode(txPin, OUTPUT);
+
+  // A message to be read for the Bluetooth users.
+  printOnSerial(messageWhenConnected, true);
 }
 
 // Alias for digital write HIGH.
@@ -139,6 +146,7 @@ void changeBrightness(byte pin, byte brigthness) {
 
 // Use the Serial service to print a message.
 void printOnSerial(String message, bool isWriteForUser) {
+  Serial.print("OUTPUT: ");
   Serial.println(message);
 
   if (isWriteForUser) {
@@ -159,8 +167,13 @@ void setUpAllPinsAsOutputs() {
 
 // Initializer the serial for output for us.
 void setUpSerialStatus() {
+  // Set up our serial output.
   Serial.begin(baudRateSerialOutput);
+
   printOnSerial(startingOutputMessage, false);
+
+  // Set up the this led to show the status of the bluetooth.
+  pinMode(statusPin, OUTPUT);
 }
 
 // Convert from 0 - 100 to 0 - 255.
@@ -242,27 +255,27 @@ struct BrightProtocol {
 // A structure to store the data getted from protocol.
 struct BrightProtocol brightPin;
 
+// Check the pattern of the our protocol for the data sent to us.
 bool checkRegexForProtocol(String data) {
-  // A wrapper for String data.
-  char dataArray[maximumSizeOfBuffer];
+  byte dataLength = data.length();
 
-  // Will store the matched result.
-  char *matchedResult;
+  // A wrapper for String data.
+  char dataArray[dataLength];
 
   // Will store each data recovered.
-  char *pinLedData;
-  char *intensityData;
-  char *frequencyData;
-  char *timeData;
+  char pinLedData[10];
+  char intensityData[10];
+  char frequencyData[10];
+  char timeData[10];
 
   // Convert our String to char[].
-  data.toCharArray(dataArray, maximumSizeOfBuffer);
-  
+  data.toCharArray(dataArray, dataLength);
+
   // Match state object.
   MatchState matchState;
 
   // Buffer must be larger enough to hold expected string, or malloc it.
-  char resultBuffer[maximumSizeOfBuffer];
+  char resultBuffer[dataLength];
 
   // Setting up the string that we are searching.
   matchState.Target(dataArray);
@@ -272,24 +285,21 @@ bool checkRegexForProtocol(String data) {
 
   switch (matchResult) {
     case REGEXP_MATCHED:
-      // Stores the matched on.
-      matchedResult = matchState.GetMatch(resultBuffer);
-
       if (matchState.level < amountOfValuesOnProtocol) {
         printOnSerial(weCouldNotFindAllData, true);
-        
+
         return false;
       }
-      
-      pinLedData = matchState.GetCapture(resultBuffer, pinLedIndex);
-      intensityData = matchState.GetCapture(resultBuffer, intensityIndex);
-      frequencyData = matchState.GetCapture(resultBuffer, frequencyIndex);
-      timeData = matchState.GetCapture(resultBuffer, timeIndex);
 
-      brightPin.ledPin = (int) pinLedData;
-      brightPin.intensity = (int) intensityData;
-      brightPin.frequency = (short) frequencyData;
-      brightPin.timeToOff = (short) timeData;
+      matchState.GetCapture(pinLedData, pinLedIndex);
+      matchState.GetCapture(intensityData, intensityIndex);
+      matchState.GetCapture(frequencyData, frequencyIndex);
+      matchState.GetCapture(timeData, timeIndex);
+
+      brightPin.ledPin = atoi(pinLedData);
+      brightPin.intensity = atoi(intensityData);
+      brightPin.frequency = atoi(frequencyData);
+      brightPin.timeToOff = atoi(timeData);
 
       return true;
 
@@ -311,9 +321,12 @@ void processProtocolData() {
 
   if (brightPin.readyToGo) {
     for (byte b = 0; b <= brightPin.frequency; b++) {
+      Serial.print(brightPin.milisecondsBetweenPulses);
+
       analogWrite(brightPin.ledPin, brightPin.brightness);
       delay(brightPin.milisecondsBetweenPulses);
       analogWrite(brightPin.ledPin, minimumIntensity);
+      delay(brightPin.milisecondsBetweenPulses);
     }
   }
 }
@@ -330,7 +343,7 @@ void workOnDataReceived(String data) {
   if (working) {
     processProtocolData();
   } else {
-    printOnSerial(dontMatchesWithProtocol, true);
+    printOnSerial(dontWorkingWithDataOnProtocol, true);
   }
 }
 
@@ -344,15 +357,16 @@ void setup() {
 
 void loop() {
   // Turn off the status led for indicate that we not read anything.
-  turnOffLed(statusPin);
+  turnOnLed(statusPin);
 
   if (myBluetooth.available()) {
+    turnOffLed(statusPin);
+    
     String value = myBluetooth.readString();
 
     workOnDataReceived(value);
   }
 
-  // Wait for a time to read again the serial.
-  delay(3000);
+  delay(100);
 }
 
