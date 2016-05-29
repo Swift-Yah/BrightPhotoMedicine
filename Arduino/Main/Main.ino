@@ -101,11 +101,14 @@ const byte amountOfValuesOnProtocol = 4;
 // The increase step for each PMW sent to pulse.
 const float pulseStep = 5;
 
+// The default size of a buffer.
+const byte defaultBufferSize = 10;
+
 // The protocol that we were waiting.
 // A unique string that should be the following format.
 // Model: {(pinLed), (intensity), (frequency), (time)}
 // Example: {4, 30, 2, 10}
-const char pattern[] = "{(.*), (.*), (.*), (.*)}";
+const char pattern[] = "{(.+), (.+), (.+), (.+)}";
 
 // Each index indicates the position on regex groups of a value.
 
@@ -371,9 +374,9 @@ void workOnDataReceived(String data) {
 // Arduino piece.
 
 void setup() {
+  setUpSerialStatus();
   setUpBluetooth();
   setUpAllPinsAsOutputs();
-  setUpSerialStatus();
 }
 
 void loop() {
