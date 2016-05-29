@@ -269,10 +269,10 @@ bool checkRegexForProtocol(String data) {
   char dataArray[dataLength];
 
   // Will store each data recovered.
-  char pinLedData[10];
-  char intensityData[10];
-  char frequencyData[10];
-  char timeData[10];
+  char pinLedData[defaultBufferSize];
+  char intensityData[defaultBufferSize];
+  char frequencyData[defaultBufferSize];
+  char timeData[defaultBufferSize];
 
   // Convert our String to char[].
   data.toCharArray(dataArray, dataLength);
