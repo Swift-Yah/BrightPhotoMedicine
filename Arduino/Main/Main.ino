@@ -107,7 +107,7 @@ const byte defaultBufferSize = 10;
 // The protocol that we were waiting.
 // A unique string that should be the following format.
 // Model: {(pinLed), (intensity), (frequency), (time)}
-// Example: {4, 30, 2, 10}
+// Example: {3, 99, 10, 10}
 const char pattern[] = "{(.+), (.+), (.+), (.+)}";
 
 // Each index indicates the position on regex groups of a value.

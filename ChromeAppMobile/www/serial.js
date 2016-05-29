@@ -84,8 +84,7 @@ var SerialService = (function () {
 
             UI.getInstance().showMessageFromSerial(message);
         };
-
-        this.openDevice("/dev/tty.usbmodem1421");
+        
         this.getDevices(onLogDevices);
     };
 
