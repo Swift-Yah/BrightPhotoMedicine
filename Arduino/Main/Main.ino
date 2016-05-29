@@ -331,7 +331,9 @@ void processProtocolData() {
       Serial.print("B = ");
       Serial.println(eachIncreaseDelay);
 
-      for (byte i = minimumBrightness; i < brightPin.brightness; i += pulseStep) {
+      byte i = minimumBrightness;
+
+      for (i; i < brightPin.brightness; i += pulseStep) {
         Serial.print("I = ");
         Serial.println(i);
         analogWrite(brightPin.ledPin, i);
@@ -339,7 +341,7 @@ void processProtocolData() {
         totalDelay += eachIncreaseDelay;
       }
 
-      for (byte j = maximumBrightness; j > 0; j -= pulseStep) {
+      for (byte j = i; j > 0; j -= pulseStep) {
         Serial.print("J = ");
         Serial.println(j);
         analogWrite(brightPin.ledPin, j);
