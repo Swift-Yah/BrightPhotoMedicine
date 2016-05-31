@@ -1,7 +1,6 @@
 var UI = (function () {
     // Common functions used for tweaking UI elements.
     function UI() {
-        
     }
 
     // Global instance.
@@ -34,6 +33,14 @@ var UI = (function () {
 
     UI.prototype.showMessageFromSerial = function(message) {
         setFieldValue('messages-from-serial', message);
+    };
+
+    UI.prototype.updateUIForOpenConnection = function (isOpen) {
+        setFieldValue('status-message', "Abaixo insira os valores que deseja alterar para o LED 3:");
+        
+        document.getElementById('setting-led').hidden = false;
+        document.getElementById('device-info').hidden = true;
+        
     };
 
     UI.prototype.setAdapter = function (address, name) {

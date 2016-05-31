@@ -13,6 +13,23 @@ var SerialService = (function () {
         this.onClose = new chrome.Event();
         this.device = null;
         this.ui = UI.getInstance();
+        this.connectionId = "";
+
+        document.getElementById('start-bluetooth').addEventListener('click', function () {
+            var self = this;
+
+            var led = 3;
+
+            var intensity = document.getElementById('intensity').value;
+            var frequency = document.getElementById('frequency').value;
+            var time = document.getElementById('time').value;
+
+            var protocolToSend = "[" + led + ", " + intensity + ", " + frequency + ", " + time + "]";
+
+            log(protocolToSend);
+
+            SerialService.getInstance().send(protocolToSend);
+        });
     }
 
     // Global instance
@@ -23,11 +40,18 @@ var SerialService = (function () {
     Serial.prototype.init = function () {
         var self = this;
 
+        this.onReceive.addListener(function (message) {
+            log(message);
+            self.ui.showMessageFromSerial(message);
+        });
+
         self.listDevices();
     };
 
     Serial.prototype.initConnection = function (connectionId) {
         var self = this;
+
+        self.connectionId = connectionId;
 
         chrome.serial.onReceive.addListener(function (receiveInfo) {
             if (receiveInfo.connectionId == connectionId) {
@@ -38,6 +62,7 @@ var SerialService = (function () {
         });
 
         chrome.serial.onReceiveError.addListener(function (errorInfo) {
+            logObj(errorInfo);
             if (errorInfo.connectionId == connectionId) {
                 self.onError.dispatch(errorInfo.error);
             }
@@ -53,9 +78,10 @@ var SerialService = (function () {
     };
 
     Serial.prototype.send = function (message) {
+        var self = this;
         var newString = stringToArrayBuffer(message);
 
-        chrome.serial.send(connectionId, newString, function () {});
+        chrome.serial.send(self.connectionId, newString, function () {});
     };
 
     Serial.prototype.getDevices = function (callback) {
@@ -73,13 +99,28 @@ var SerialService = (function () {
     };
 
     Serial.prototype.listDevices = function() {
+        var self = this;
+
         var onLogDevices = function(ports) {
             var count = ports.length ? ports.length : 0;
 
             var message = "Nós encontramos " + count + " conexões seriais: ";
 
             for (var i = 0; i < count; i++) {
-                message += ports[i].path + "\r\n";
+                var path = ports[i].path;
+
+                message += path + "\r\n";
+
+                if (path == "/dev/tty.usbmodem1411") {
+                    UI.getInstance().showStatusBluetooth(true);
+                    message = "Estamos conectados ao Arduino...";
+
+                    self.openDevice(path);
+
+                    self.ui.updateUIForOpenConnection(true);
+
+                    break;
+                }
             }
 
             UI.getInstance().showMessageFromSerial(message);
